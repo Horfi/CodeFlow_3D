@@ -1,97 +1,83 @@
-"""
-CodeFlow 3D Backend - Main FastAPI Application
-AI-Augmented Codebase Dependency Explorer
-"""
+# backend/src/app.py
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
+import os
+import sys
+from datetime import datetime
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-import uvicorn
-from contextlib import asynccontextmanager
+# Add src to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.api.routes import repository_routes, graph_routes, file_routes, analytics_routes, user_model_routes
-from src.database.SQLiteManager import SQLiteManager
-from src.services.analytics.SessionManager import SessionManager
-from src.config import Config
+from config import Config
+from api.routes.repository_routes import repository_bp
+from api.routes.graph_routes import graph_bp
+from api.routes.file_routes import file_bp
+from api.routes.analytics_routes import analytics_bp
+from api.routes.user_model_routes import user_model_bp
+from api.middleware.cors_handler import setup_cors
+from api.middleware.error_handler import setup_error_handlers
+from api.middleware.analytics_middleware import AnalyticsMiddleware
+from database.SQLiteManager import SQLiteManager
 
-# Global instances
-db_manager = None
-session_manager = None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    global db_manager, session_manager
-    
-    print("🚀 Starting CodeFlow 3D Backend...")
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
     
     # Initialize database
-    db_manager = SQLiteManager()
-    db_manager.initialize_database()
+    db_manager = SQLiteManager(app.config['DATABASE_URL'])
+    db_manager.init_db()
     
-    # Initialize session manager
-    session_manager = SessionManager(db_manager)
+    # Setup CORS
+    setup_cors(app)
     
-    # Store in app state
-    app.state.db_manager = db_manager
-    app.state.session_manager = session_manager
+    # Setup error handlers
+    setup_error_handlers(app)
     
-    print("✅ Backend initialized successfully!")
-    yield
+    # Setup analytics middleware
+    analytics_middleware = AnalyticsMiddleware()
+    app.before_request(analytics_middleware.before_request)
+    app.after_request(analytics_middleware.after_request)
     
-    # Shutdown
-    print("🛑 Shutting down CodeFlow 3D Backend...")
-    if db_manager:
-        db_manager.close()
+    # Register blueprints
+    app.register_blueprint(repository_bp, url_prefix='/api/repository')
+    app.register_blueprint(graph_bp, url_prefix='/api/graph')
+    app.register_blueprint(file_bp, url_prefix='/api/files')
+    app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
+    app.register_blueprint(user_model_bp, url_prefix='/api/user')
+    
+    # Health check endpoint
+    @app.route('/api/health')
+    def health_check():
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': '1.0.0'
+        })
+    
+    # Global exception handler
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        if isinstance(e, HTTPException):
+            return jsonify({
+                'error': e.description,
+                'status_code': e.code
+            }), e.code
+        
+        # Log the error
+        app.logger.error(f"Unhandled exception: {str(e)}")
+        
+        return jsonify({
+            'error': 'Internal server error',
+            'status_code': 500
+        }), 500
+    
+    return app
 
-# Create FastAPI app
-app = FastAPI(
-    title="CodeFlow 3D API",
-    description="AI-Augmented Codebase Dependency Explorer Backend",
-    version="1.0.0",
-    lifespan=lifespan
-)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Include API routes
-app.include_router(repository_routes.router, prefix="/api/repositories", tags=["repositories"])
-app.include_router(graph_routes.router, prefix="/api/graph", tags=["graph"])
-app.include_router(file_routes.router, prefix="/api/files", tags=["files"])
-app.include_router(analytics_routes.router, prefix="/api/analytics", tags=["analytics"])
-app.include_router(user_model_routes.router, prefix="/api/user-model", tags=["user-model"])
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "service": "CodeFlow 3D Backend",
-        "version": "1.0.0"
-    }
-
-# Root endpoint
-@app.get("/")
-async def root():
-    return {
-        "message": "CodeFlow 3D API",
-        "docs": "/docs",
-        "health": "/health"
-    }
-
-if __name__ == "__main__":
-    config = Config()
-    uvicorn.run(
-        "app:app",
-        host=config.HOST,
-        port=config.PORT,
-        reload=config.DEBUG,
-        log_level="info"
+if __name__ == '__main__':
+    app = create_app()
+    app.run(
+        host='0.0.0.0',
+        port=int(os.environ.get('PORT', 5000)),
+        debug=os.environ.get('FLASK_ENV') == 'development'
     )
