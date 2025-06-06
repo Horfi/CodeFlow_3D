@@ -1,4 +1,4 @@
-/ frontend/src/components/shared/Button.jsx
+// frontend/src/components/shared/Button.jsx
 import React from 'react';
 
 const Button = ({ 

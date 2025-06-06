@@ -1,4 +1,4 @@
-/ frontend/src/hooks/useUserModel.js
+// frontend/src/hooks/useUserModel.js
 import { useState, useEffect } from 'react';
 import UserModelService from '../services/UserModelService';
 

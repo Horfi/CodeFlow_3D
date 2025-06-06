@@ -1,103 +1,115 @@
-<!-- frontend/public/index.html -->
+<!-- frontend/index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="CodeFlow 3D - AI-Augmented Codebase Dependency Explorer" />
-    <meta name="keywords" content="code visualization, dependency graph, 3D graph, code analysis, AI personalization" />
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeFlow 3D - AI-Augmented Code Dependency Explorer</title>
+    <meta name="description" content="Explore your codebase in 3D with AI-powered personalization and dependency visualization" />
     <meta name="author" content="CodeFlow 3D Team" />
     
-    <!-- Open Graph meta tags for social sharing -->
-    <meta property="og:title" content="CodeFlow 3D - AI-Augmented Code Explorer" />
-    <meta property="og:description" content="Visualize and explore your codebase dependencies in immersive 3D with AI-powered personalization" />
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/styles/global.css" as="style" />
+    
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://codeflow3d.com" />
-    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta property="og:url" content="https://codeflow3d.com/" />
+    <meta property="og:title" content="CodeFlow 3D - AI-Augmented Code Dependency Explorer" />
+    <meta property="og:description" content="Explore your codebase in 3D with AI-powered personalization" />
     
-    <!-- Twitter Card meta tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CodeFlow 3D - AI-Augmented Code Explorer" />
-    <meta name="twitter:description" content="Visualize and explore your codebase dependencies in immersive 3D" />
-    <meta name="twitter:image" content="%PUBLIC_URL%/twitter-image.png" />
-    
-    <!-- Apple touch icon -->
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    
-    <!-- Web app manifest -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
-    <!-- Preconnect to external domains for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Import Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Import Three.js Force Graph from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/3d-force-graph"></script>
-    
-    <!-- Import D3.js for force simulation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-    
-    <title>CodeFlow 3D - AI-Augmented Code Explorer</title>
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://codeflow3d.com/" />
+    <meta property="twitter:title" content="CodeFlow 3D" />
+    <meta property="twitter:description" content="AI-Augmented Code Dependency Explorer" />
     
     <style>
-      /* Critical CSS for initial loading */
-      * {
+      /* Critical CSS - Loading state */
+      body {
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
-      }
-      
-      html, body {
-        height: 100%;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
         color: #ffffff;
-        overflow: hidden;
+        overflow-x: hidden;
       }
       
       #root {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
+        min-height: 100vh;
       }
       
-      /* Loading spinner styles */
-      .loading-container {
+      /* Loading screen styles */
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
       }
       
-      .loading-spinner {
-        width: 60px;
-        height: 60px;
-        border: 3px solid rgba(255, 255, 255, 0.1);
-        border-top: 3px solid #69b3ff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: 20px;
+      .loading-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loading-logo {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
       }
       
       .loading-text {
-        font-size: 18px;
-        color: #ffffff;
-        margin-bottom: 10px;
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: #69b3ff;
       }
       
-      .loading-subtext {
-        font-size: 14px;
-        color: #888888;
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #333;
+        border-top: 4px solid #69b3ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      .loading-progress {
+        margin-top: 2rem;
         text-align: center;
-        max-width: 400px;
+      }
+      
+      .progress-bar {
+        width: 300px;
+        height: 4px;
+        background: #333;
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 1rem auto;
+      }
+      
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #69b3ff, #4ecdc4);
+        width: 0%;
+        animation: loading-progress 3s ease-in-out infinite;
+        transition: width 0.3s ease;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
       }
       
       @keyframes spin {
@@ -105,179 +117,123 @@
         100% { transform: rotate(360deg); }
       }
       
+      @keyframes loading-progress {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+      }
+      
       /* Error boundary styles */
       .error-boundary {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-        padding: 20px;
+        padding: 2rem;
         text-align: center;
-      }
-      
-      .error-content h2 {
         color: #ff6b6b;
-        margin-bottom: 15px;
-        font-size: 24px;
       }
       
-      .error-content p {
-        color: #cccccc;
-        margin-bottom: 20px;
-        font-size: 16px;
+      .error-boundary h2 {
+        margin-bottom: 1rem;
       }
       
-      .error-actions button {
+      .error-boundary button {
         background: #69b3ff;
         color: white;
         border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
         cursor: pointer;
-        margin: 0 10px;
-        font-size: 14px;
-        transition: background-color 0.2s;
+        margin: 0.5rem;
+        font-size: 1rem;
       }
       
-      .error-actions button:hover {
-        background: #5a9de6;
-      }
-      
-      /* Progressive enhancement for supported browsers */
-      @supports (backdrop-filter: blur(10px)) {
-        .loading-container {
-          backdrop-filter: blur(10px);
-        }
-      }
-      
-      /* Dark theme variables */
-      :root {
-        --primary-color: #69b3ff;
-        --secondary-color: #ff6b6b;
-        --accent-color: #4ecdc4;
-        --background-dark: #0a0a0a;
-        --background-light: #1a1a1a;
-        --text-primary: #ffffff;
-        --text-secondary: #cccccc;
-        --text-muted: #888888;
-        --border-color: #333333;
-        --success-color: #4caf50;
-        --warning-color: #ff9800;
-        --error-color: #f44336;
-      }
-      
-      /* Hide scrollbars but keep functionality */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      
-      ::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-      }
-      
-      ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 3px;
-      }
-      
-      ::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.5);
+      .error-boundary button:hover {
+        background: #5aa3f0;
       }
     </style>
   </head>
-  
   <body>
-    <noscript>
-      <div class="error-boundary">
-        <div class="error-content">
-          <h2>🚨 JavaScript Required</h2>
-          <p>CodeFlow 3D requires JavaScript to run. Please enable JavaScript in your browser and reload the page.</p>
-          <div class="error-actions">
-            <button onclick="window.location.reload()">🔄 Reload Page</button>
-          </div>
-        </div>
-      </div>
-    </noscript>
-    
     <div id="root">
-      <!-- Loading screen displayed until React loads -->
-      <div class="loading-container">
+      <!-- Loading screen shown while app initializes -->
+      <div id="loading-screen" class="loading-screen">
+        <div class="loading-logo">🌟 CodeFlow 3D 🌟</div>
+        <div class="loading-text">AI-Augmented Code Dependency Explorer</div>
         <div class="loading-spinner"></div>
-        <div class="loading-text">🌟 Loading CodeFlow 3D</div>
-        <div class="loading-subtext">
-          Initializing AI-augmented code dependency explorer...<br>
-          Preparing 3D visualization engine and personalization algorithms.
+        <div class="loading-progress">
+          <div>Loading application...</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
         </div>
       </div>
     </div>
     
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('SW registered: ', registration);
-            })
-            .catch(function(registrationError) {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-    </script>
+    <!-- Fallback for users with JavaScript disabled -->
+    <noscript>
+      <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+        <h2>JavaScript Required</h2>
+        <p>CodeFlow 3D requires JavaScript to run. Please enable JavaScript in your browser and refresh the page.</p>
+      </div>
+    </noscript>
     
-    <!-- Analytics and error tracking -->
+    <script type="module" src="/src/main.jsx"></script>
+    
     <script>
-      // Global error handler
-      window.addEventListener('error', function(event) {
-        console.error('Global error:', event.error);
-        // Send to analytics service
-        if (window.analytics) {
-          window.analytics.track('error', {
-            message: event.error.message,
-            filename: event.filename,
-            lineno: event.lineno,
-            colno: event.colno
-          });
-        }
-      });
-      
-      // Unhandled promise rejection handler
-      window.addEventListener('unhandledrejection', function(event) {
-        console.error('Unhandled promise rejection:', event.reason);
-        if (window.analytics) {
-          window.analytics.track('promise_rejection', {
-            reason: event.reason
-          });
-        }
+      // Show loading screen and handle app initialization
+      window.addEventListener('DOMContentLoaded', function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const progressFill = document.querySelector('.progress-fill');
+        
+        // Simulate loading progress
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += Math.random() * 15;
+          if (progress > 90) progress = 90;
+          progressFill.style.width = progress + '%';
+        }, 200);
+        
+        // Hide loading screen when React app is ready
+        window.addEventListener('load', function() {
+          clearInterval(interval);
+          progressFill.style.width = '100%';
+          
+          setTimeout(() => {
+            if (loadingScreen) {
+              loadingScreen.classList.add('fade-out');
+              setTimeout(() => {
+                loadingScreen.remove();
+              }, 500);
+            }
+          }, 500);
+        });
+        
+        // Error handling for failed loads
+        window.addEventListener('error', function(e) {
+          clearInterval(interval);
+          if (loadingScreen) {
+            loadingScreen.innerHTML = `
+              <div class="error-boundary">
+                <h2>🚨 Failed to Load Application</h2>
+                <p>There was an error loading CodeFlow 3D. Please try refreshing the page.</p>
+                <button onclick="window.location.reload()">🔄 Reload Page</button>
+                <button onclick="window.location.href='/'">🏠 Go Home</button>
+              </div>
+            `;
+          }
+        });
       });
       
       // Performance monitoring
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          const perfData = performance.getEntriesByType('navigation')[0];
-          if (window.analytics && perfData) {
-            window.analytics.track('page_load_performance', {
+      if ('performance' in window) {
+        window.addEventListener('load', function() {
+          setTimeout(() => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            console.log('Page Load Performance:', {
               loadTime: perfData.loadEventEnd - perfData.loadEventStart,
               domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
-              firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0
+              firstPaint: performance.getEntriesByType('paint')[0]?.startTime
             });
-          }
-        }, 0);
-      });
-    </script>
-    
-    <!-- Environment variables for runtime -->
-    <script>
-      window.ENV = {
-        NODE_ENV: '%NODE_ENV%',
-        REACT_APP_API_URL: '%REACT_APP_API_URL%',
-        REACT_APP_VERSION: '%REACT_APP_VERSION%',
-        REACT_APP_BUILD_TIME: '%REACT_APP_BUILD_TIME%'
-      };
+          }, 0);
+        });
+      }
     </script>
   </body>
 </html>

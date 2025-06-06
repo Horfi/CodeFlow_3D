@@ -1,4 +1,4 @@
-/ frontend/src/components/layout/SplitLayout.jsx
+// frontend/src/components/layout/SplitLayout.jsx
 import React, { useState } from 'react';
 import Graph3DCanvas from '../graph/Graph3DCanvas';
 import CodeEditorPanel from '../editor/CodeEditorPanel';
