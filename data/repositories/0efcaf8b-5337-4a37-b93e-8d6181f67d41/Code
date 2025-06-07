@@ -1,0 +1,44 @@
+{
+  "frontend": {
+    "package.json": {
+      "name": "codeflow-3d-frontend",
+      "version": "1.0.0",
+      "private": true,
+      "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "three": "^0.155.0",
+        "@react-three/fiber": "^8.13.0",
+        "@react-three/drei": "^9.79.0",
+        "@monaco-editor/react": "^4.5.1",
+        "monaco-editor": "^0.40.0",
+        "axios": "^1.4.0",
+        "lodash": "^4.17.21",
+        "d3-force": "^3.0.0",
+        "papaparse": "^5.4.1",
+        "react-router-dom": "^6.14.0",
+        "@emotion/react": "^11.11.1",
+        "@emotion/styled": "^11.11.0",
+        "styled-components": "^6.0.0"
+      },
+      "devDependencies": {
+        "@vitejs/plugin-react": "^4.0.0",
+        "vite": "^4.4.0",
+        "eslint": "^8.45.0",
+        "eslint-plugin-react": "^7.32.0"
+      },
+      "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+      }
+    },
+    "vite.config.js": "import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\n\nexport default defineConfig({\n  plugins: [react()],\n  server: {\n    port: 3000,\n    proxy: {\n      '/api': {\n        target: 'http://localhost:8000',\n        changeOrigin: true\n      }\n    }\n  },\n  optimizeDeps: {\n    include: ['three', '@react-three/fiber', '@react-three/drei']\n  }\n})"
+  },
+  "backend": {
+    "requirements.txt": "fastapi==0.100.0\nuvicorn==0.23.0\npydantic==2.0.0\ngitpython==3.1.32\nnumpy==1.24.0\nnetworkx==3.1\nsqlite3\nast\nre\nos\njson\nmath\nrandom\ntime\ndatetime\nlogging\ntyping",
+    "main.py": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom api.routes import repository_routes, graph_routes, file_routes, analytics_routes, user_model_routes\nimport uvicorn\n\napp = FastAPI(title=\"CodeFlow 3D Backend\", version=\"1.0.0\")\n\n# CORS middleware\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"http://localhost:3000\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n# Include route modules\napp.include_router(repository_routes.router, prefix=\"/api/repositories\", tags=[\"repositories\"])\napp.include_router(graph_routes.router, prefix=\"/api/graph\", tags=[\"graph\"])\napp.include_router(file_routes.router, prefix=\"/api/files\", tags=[\"files\"])\napp.include_router(analytics_routes.router, prefix=\"/api/analytics\", tags=[\"analytics\"])\napp.include_router(user_model_routes.router, prefix=\"/api/user-model\", tags=[\"user-model\"])\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"CodeFlow 3D Backend API\"}\n\nif __name__ == \"__main__\":\n    uvicorn.run(\"main:app\", host=\"0.0.0.0\", port=8000, reload=True)"
+  },
+  "docker-compose.yml": "version: '3.8'\nservices:\n  frontend:\n    build: ./frontend\n    ports:\n      - \"3000:3000\"\n    volumes:\n      - ./frontend:/app\n      - /app/node_modules\n    environment:\n      - VITE_API_URL=http://localhost:8000\n  \n  backend:\n    build: ./backend\n    ports:\n      - \"8000:8000\"\n    volumes:\n      - ./backend:/app\n      - ./data:/app/data\n    environment:\n      - DATABASE_URL=sqlite:///./data/codeflow.db\n      - REPOSITORIES_PATH=/app/data/repositories\n  \n  volumes:\n    frontend_node_modules:\n    backend_data:"
+}

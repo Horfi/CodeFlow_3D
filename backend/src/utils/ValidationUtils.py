@@ -109,10 +109,12 @@ class ValidationUtils:
         if not ValidationUtils.validate_json_data(data, required_fields):
             return False
         
-        # Validate interaction type
+        # Validate interaction type - EXPANDED LIST
         valid_types = [
             'file_opened', 'file_selected', 'node_click', 'code_edited',
-            'search', 'bookmark_added', 'version_switch', 'graph_interaction'
+            'search', 'bookmark_added', 'version_switch', 'graph_interaction',
+            'page_view', 'session_start', 'session_end',  # Added these
+            'navigation', 'scroll', 'click', 'hover'       # Added these
         ]
         
         if data['type'] not in valid_types:

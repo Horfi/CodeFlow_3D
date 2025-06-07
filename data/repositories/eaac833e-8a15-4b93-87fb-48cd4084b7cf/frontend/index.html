@@ -1,0 +1,273 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeFlow 3D - AI-Augmented Code Dependency Explorer</title>
+    <meta name="description" content="Explore your codebase in 3D with AI-powered personalization and dependency visualization" />
+    <meta name="author" content="CodeFlow 3D Team" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/styles/global.css" as="style" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://codeflow3d.com/" />
+    <meta property="og:title" content="CodeFlow 3D - AI-Augmented Code Dependency Explorer" />
+    <meta property="og:description" content="Explore your codebase in 3D with AI-powered personalization" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://codeflow3d.com/" />
+    <meta property="twitter:title" content="CodeFlow 3D" />
+    <meta property="twitter:description" content="AI-Augmented Code Dependency Explorer" />
+    
+    <style>
+      /* Critical CSS - Loading state */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        color: #ffffff;
+        overflow-x: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading screen styles */
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      .loading-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loading-logo {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+      }
+      
+      .loading-text {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: #69b3ff;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #333;
+        border-top: 4px solid #69b3ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      .loading-progress {
+        margin-top: 2rem;
+        text-align: center;
+      }
+      
+      .progress-bar {
+        width: 300px;
+        height: 4px;
+        background: #333;
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 1rem auto;
+      }
+      
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #69b3ff, #4ecdc4);
+        width: 0%;
+        animation: loading-progress 3s ease-in-out infinite;
+        transition: width 0.3s ease;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes loading-progress {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+      }
+      
+      /* Error boundary styles */
+      .error-boundary {
+        padding: 2rem;
+        text-align: center;
+        color: #ff6b6b;
+      }
+      
+      .error-boundary h2 {
+        margin-bottom: 1rem;
+      }
+      
+      .error-boundary button {
+        background: #69b3ff;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0.5rem;
+        font-size: 1rem;
+      }
+      
+      .error-boundary button:hover {
+        background: #5aa3f0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading screen shown while app initializes -->
+      <div id="loading-screen" class="loading-screen">
+        <div class="loading-logo">🌟 CodeFlow 3D 🌟</div>
+        <div class="loading-text">AI-Augmented Code Dependency Explorer</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-progress">
+          <div>Loading application...</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Fallback for users with JavaScript disabled -->
+    <noscript>
+      <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+        <h2>JavaScript Required</h2>
+        <p>CodeFlow 3D requires JavaScript to run. Please enable JavaScript in your browser and refresh the page.</p>
+      </div>
+    </noscript>
+    
+    <script type="module" src="/src/main.jsx"></script>
+    
+        <script>
+    // Show loading screen and handle app initialization
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('[CodeFlow] DOM Content Loaded');
+        
+        const loadingScreen = document.getElementById('loading-screen');
+        const progressFill = document.querySelector('.progress-fill');
+        const statusDiv = document.querySelector('.loading-progress div');
+        
+        if (!loadingScreen || !progressFill) {
+        console.error('[CodeFlow] Missing loading elements');
+        return;
+        }
+
+        let progress = 0;
+        let isComplete = false;
+        
+        // Single progress animation - no double loading
+        const progressInterval = setInterval(() => {
+        if (isComplete) return;
+        
+        progress += Math.random() * 10 + 5; // Steady progress
+        if (progress >= 90) {
+            progress = 90;
+            if (statusDiv) statusDiv.textContent = 'Loading React components...';
+        }
+        progressFill.style.width = progress + '%';
+        }, 200);
+
+        // React app ready handler
+        function handleAppReady() {
+        if (isComplete) return;
+        isComplete = true;
+        
+        console.log('[CodeFlow] App ready, hiding loading screen');
+        clearInterval(progressInterval);
+        
+        progressFill.style.width = '100%';
+        if (statusDiv) statusDiv.textContent = 'Ready!';
+        
+        setTimeout(() => {
+            if (loadingScreen) {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loadingScreen.remove();
+                console.log('[CodeFlow] Loading screen removed');
+            }, 500);
+            }
+        }, 300);
+        }
+
+        // Listen for app ready signal
+        window.addEventListener('codeflow-ready', handleAppReady);
+        
+        // Fallback timeout
+        setTimeout(() => {
+        if (!isComplete) {
+            console.log('[CodeFlow] Timeout reached, forcing app ready');
+            handleAppReady();
+        }
+        }, 10000);
+
+        // Error handler for failed loads
+        window.addEventListener('error', function(e) {
+        if (isComplete) return;
+        clearInterval(progressInterval);
+        if (loadingScreen) {
+            loadingScreen.innerHTML = `
+            <div class="error-boundary">
+                <h2>🚨 Failed to Load Application</h2>
+                <p>Please check the console for more details.</p>
+                <button onclick="window.location.reload()">🔄 Reload Page</button>
+                <button onclick="window.location.href='/'">🏠 Go Home</button>
+            </div>
+            `;
+        }
+        });
+    });
+    
+    // Performance monitoring
+    if ('performance' in window) {
+        window.addEventListener('load', function() {
+        setTimeout(() => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            console.log('[CodeFlow] Page Load Performance:', {
+            loadTime: perfData.loadEventEnd - perfData.loadEventStart,
+            domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
+            firstPaint: performance.getEntriesByType('paint')[0]?.startTime
+            });
+        }, 0);
+        });
+    }
+    </script>
+  </body>
+</html>
