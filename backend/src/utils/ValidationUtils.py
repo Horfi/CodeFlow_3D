@@ -3,7 +3,7 @@ import re
 import uuid
 import os
 from urllib.parse import urlparse
-from typing import List, Any, Dict  # Add missing imports
+from typing import List, Any, Dict
 
 class ValidationUtils:
     """Input validation utilities"""
@@ -127,79 +127,3 @@ class ValidationUtils:
             return False
         
         return True
-
-# backend/src/api/middleware/cors_handler.py
-from flask_cors import CORS
-
-def setup_cors(app):
-    """Setup CORS configuration"""
-    CORS(app, 
-         origins=app.config.get('CORS_ORIGINS', ['http://localhost:3000']),
-         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-         allow_headers=['Content-Type', 'Authorization', 'X-User-ID', 'X-Session-ID'],
-         supports_credentials=True)
-
-# backend/src/api/middleware/error_handler.py
-from flask import jsonify
-import logging
-
-def setup_error_handlers(app):
-    """Setup global error handlers"""
-    
-    @app.errorhandler(400)
-    def bad_request(error):
-        return jsonify({
-            'error': 'Bad Request',
-            'message': str(error.description)
-        }), 400
-    
-    @app.errorhandler(404)
-    def not_found(error):
-        return jsonify({
-            'error': 'Not Found',
-            'message': 'The requested resource was not found'
-        }), 404
-    
-    @app.errorhandler(500)
-    def internal_error(error):
-        app.logger.error(f'Internal error: {error}')
-        return jsonify({
-            'error': 'Internal Server Error',
-            'message': 'An internal server error occurred'
-        }), 500
-
-# backend/src/api/middleware/analytics_middleware.py
-from flask import request, g
-import time
-import logging
-
-class AnalyticsMiddleware:
-    """Middleware for tracking request analytics"""
-    
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-    
-    def before_request(self):
-        """Execute before each request"""
-        g.start_time = time.time()
-        g.user_id = request.headers.get('X-User-ID')
-        g.session_id = request.headers.get('X-Session-ID')
-    
-    def after_request(self, response):
-        """Execute after each request"""
-        try:
-            duration = time.time() - g.start_time
-            
-            # Log request details
-            self.logger.info(f"Request: {request.method} {request.path} "
-                           f"Duration: {duration:.3f}s "
-                           f"Status: {response.status_code} "
-                           f"User: {g.get('user_id', 'anonymous')}")
-            
-            # Add performance headers
-            response.headers['X-Response-Time'] = f"{duration:.3f}"
-            
-        except Exception as e:
-            self.logger.error(f"Analytics middleware error: {e}")
-        
-        return response
