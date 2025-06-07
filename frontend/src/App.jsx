@@ -19,9 +19,19 @@ function App() {
     window.projectFiles = []
     
     // Initialize app-level services
-    console.log('🌟 CodeFlow 3D initialized')
-    console.log('📊 Version:', __APP_VERSION__)
-    console.log('🔨 Built:', __BUILD_TIME__)
+      console.log('🌟 CodeFlow 3D initialized')
+
+      // Safely access global constants with fallbacks
+      const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'
+      const buildTime = typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : new Date().toISOString()
+
+      console.log('📊 Version:', version)
+      console.log('🔨 Built:', buildTime)
+
+      // Signal to loading screen that app is ready
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('codeflow-ready'))
+      }, 100)
   }, [])
 
   return (

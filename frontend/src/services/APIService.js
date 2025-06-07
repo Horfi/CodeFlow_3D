@@ -1,7 +1,8 @@
 // frontend/src/services/APIService.js
 class APIService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+    // Fix: Use import.meta.env instead of process.env for Vite
+    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     this.timeout = 30000; // 30 seconds
   }
 
@@ -38,7 +39,8 @@ class APIService {
       
       return await response.text();
     } catch (error) {
-      console.error(`API request failed: ${endpoint}`, error);
+      // Don't log every failed API call as error since backend might not be running
+      console.warn(`API request failed: ${endpoint}`, error.message);
       throw error;
     }
   }
